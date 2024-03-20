@@ -14,20 +14,39 @@ WHERE b1.alcohol > (SELECT AVG(alcohol) FROM beers)
 
 -- d : toon een lijst van alle brouwers met de prijs en naam van hun duurste
 -- bier. Het is mogelijk dat er meerdere bieren per brouwer geselecteerd worden
-SELECT b2.Name, b1.Name, b1.Price
+SELECT brewers.Name, beers.Name, beers.Price
 FROM (
          SELECT BrewerId, MAX(Price) AS MaxPrice
          FROM beers
          GROUP BY BrewerId
      ) AS max_prices
-         JOIN beers b1 ON max_prices.BrewerId = b1.BrewerId AND max_prices.MaxPrice = b1.Price
-         JOIN brewers b2 ON b1.BrewerId = b1.BrewerId = b2.Id;
+         JOIN beers ON max_prices.BrewerId = beers.BrewerId AND max_prices.MaxPrice = beers.Price
+         JOIN brewers  ON beers.BrewerId = beers.BrewerId = brewers.Id;
 
 
- SELECT b1.* FROM beers b1
-  WHERE b1.alcohol < (SELECT AVG(b2.alcohol)
-                      FROM beers b2
-                      WHERE b2.categoryid=b1.categoryid);
+SELECT Brewers.Name AS BrewerName,
+       MAX(Beers.Price) AS MaxPrice,
+       GROUP_CONCAT(Beers.Name ORDER BY Beers.Price DESC) AS ExpensiveBeers
+FROM Brewers
+         LEFT JOIN Beers ON Brewers.Id = Beers.BrewerId
+GROUP BY Brewers.Id;
+
+SELECT
+    brewers.name AS BrewerName,
+    beers.name AS BeerName,
+    beers.Price
+FROM beers
+         INNER JOIN brewers ON beers.brewerId = brewers.id
+WHERE
+    (beers.brewerId, beers.Price) IN (
+        SELECT
+            beers.brewerId,
+            MAX(beers.Price) AS MaxPrice
+        FROM beers
+        GROUP BY beers.brewerId
+    );
+
+
 
 
 
